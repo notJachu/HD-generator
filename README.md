@@ -13,6 +13,7 @@ faker docs:
 
 ## ERD
 ![erd](erd.png)
+- klient musi mieć inny klucz główny
 
 ## Excel sheets 
 
