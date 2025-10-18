@@ -33,4 +33,6 @@ faker docs:
         Kolumna D -> data_urodzenia(date)
         Kolumna E -> stanowisko(tekst)
         Kolumna F -> stawka_godzinowa(float)
+
+    dodać imie i nazwisko do pracowników
     

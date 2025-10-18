@@ -1,4 +1,7 @@
+from traceback import print_tb
+
 from faker import Faker
+from EntityClasses import *
 import random
 import uuid
 
@@ -13,6 +16,8 @@ class DataGenerator:
         self.bikeOutput = "bikes.csv"
         self.transactionOutput = "transactions.csv"
         self.employeeOutput = "employees.csv"
+
+
 
     def generate_clients(self):
         print(f"Generating {self.clientNum} clients to {self.clientOutput}")
@@ -77,14 +82,16 @@ class DataGenerator:
         print("Employee generation completed.")
 
 
-    def generate_bikes(self, premium_num : int = 10, two_person_num : int = 10, multi_person_num : int = 10):
+    def generate_bikes(self, premium_num : int = 10, two_person_num : int = 10, multi_person_num : int = 10, generate_types: bool = False):
         print(f"Generating {self.bikeNum} base bikes to {self.bikeOutput}")
+        print(f"Type generation is set to {generate_types}")
         with open(self.bikeOutput, 'w') as f:
             f.write("bike_id,seats_num,is_functional,hourly_rate\n")
             for _ in range(1, self.bikeNum + 1):
-                bike_id = str(uuid.uuid4())
-                seats_num = 1
-                is_functional = random.choice([True, True, True, False])  # 75% chance to be functional
-                hourly_rate = round(random.uniform(5.0, 15.0), 2)
-                f.write(f"{bike_id},{seats_num},{is_functional},{hourly_rate}\n")
+                bike = Bike.random_bike()
+                f.write(f"{bike.bike_id},{bike.seats_num},{bike.is_functional},{bike.hourly_rate}\n")
         print("Base bike generation completed.")
+
+        if generate_types:
+            bike = MultiPersonBike.random_multi_person_bike()
+            print("a")
