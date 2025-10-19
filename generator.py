@@ -112,11 +112,13 @@ class DataGenerator:
         base_file = open(self.bikeOutput, 'a')
         multi_person_file = open('multi_person_bikes.csv', 'w')
         premium_bike_file = open('premium_bikes.csv', 'w')
+        two_person_file = open('two_person_bikes.csv', 'w')
 
         # Headers
         base_file.write("bike_id,seats_num,is_functional,hourly_rate\n")
         multi_person_file.write("bike_id,seat_config,has_stash,has_roof,rowing_seats_num\n")
         premium_bike_file.write("bike_id,has_assist,has_audio,has_lights,battery_life\n")
+        two_person_file.write("bike_id,pedal_type\n")
 
         print(f"Generating {multi_person_num} multi-person bikes to multi_person_bikes.csv and base bikes to {self.bikeOutput}")
         for _ in range(1, multi_person_num + 1):
@@ -124,10 +126,27 @@ class DataGenerator:
             multi_person_file.write(f"{bike.bike_id},{bike.seat_config},{bike.has_stash},{bike.has_roof},{bike.rowing_seats_num}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
 
-            print("Multi-person bike generation completed.")
+        print("Multi-person bike generation completed.")
 
         print(f"Generating {premium_num} premium bikes to premium_bikes.csv and base bikes to {self.bikeOutput}")
         for _ in range(1, premium_num + 1):
             bike = PremiumBike.random_premium_bike()
             premium_bike_file.write(f"{bike.bike_id},{bike.has_assist},{bike.has_audio},{bike.has_lights},{bike.battery_life}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
+
+        print("Premium bike generation completed.")
+
+        print(f"Generating {two_person_num} two-person bikes to two_person_bikes.csv and base bikes to {self.bikeOutput}")
+        for _ in range(1, two_person_num + 1):
+            bike = TwoPersonBike.random_two_person_bike()
+            two_person_file.write(f"{bike.bike_id},{bike.pedal_type}\n")
+            base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
+
+        print("Two-person bike generation completed.")
+
+        base_file.close()
+        multi_person_file.close()
+        premium_bike_file.close()
+        two_person_file.close()
+
+        print("Bike generation completed.")

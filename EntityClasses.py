@@ -61,3 +61,16 @@ class PremiumBike(Bike):
         has_lights = random.choice([True, False])
         battery_life = random.randint(2, 8)  # in hours
         return cls(bike_id, has_assist, has_audio, has_lights, battery_life, seat_num, is_functional, hourly_rate)
+
+class TwoPersonBike(Bike):
+    def __init__(self, bike_id, is_functional, hourly_rate, pedal_type, seat_num=2):
+        super().__init__(bike_id, seat_num, is_functional, hourly_rate)
+        self.pedal_type = pedal_type
+
+    @classmethod
+    def random_two_person_bike(cls):
+        bike_id = str(uuid.uuid4())
+        is_functional = random.choice([True, True, True, False])
+        hourly_rate = round(random.uniform(7.0, 25.0), 2)
+        pedal_type = random.choice(['standard', 'fancy', 'small'])
+        return cls(bike_id, is_functional, hourly_rate, pedal_type)
