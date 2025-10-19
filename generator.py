@@ -83,14 +83,19 @@ class DataGenerator:
 
 
     def generate_bikes(self, premium_num : int = 10, two_person_num : int = 10, multi_person_num : int = 10, generate_types: bool = False):
-        print(f"Generating {self.bikeNum} base bikes to {self.bikeOutput}")
+
         print(f"Type generation is set to {generate_types}")
+        if not generate_types:
+            print(f"Generating {self.bikeNum} base bikes to {self.bikeOutput}")
+        else:
+            print(f"Generating {multi_person_num + premium_num + two_person_num} bikes")
 
         # Reset base bike file to enable appending types later
         f = open(self.bikeOutput, 'r+')
         f.truncate(0)
         f.close()
 
+        # TODO: clean up commented code so it is executed when generate_types is False
         # Generate base bikes
         # if not generate_types:
         #     with open(self.bikeOutput, 'w') as f:
@@ -103,16 +108,26 @@ class DataGenerator:
         # Generate bike types
         # else:
 
+        # TODO: add variable for files not hardcode
         base_file = open(self.bikeOutput, 'a')
         multi_person_file = open('multi_person_bikes.csv', 'w')
+        premium_bike_file = open('premium_bikes.csv', 'w')
 
         # Headers
         base_file.write("bike_id,seats_num,is_functional,hourly_rate\n")
         multi_person_file.write("bike_id,seat_config,has_stash,has_roof,rowing_seats_num\n")
+        premium_bike_file.write("bike_id,has_assist,has_audio,has_lights,battery_life\n")
 
-        for _ in range(1, premium_num + 1):
+        print(f"Generating {multi_person_num} multi-person bikes to multi_person_bikes.csv and base bikes to {self.bikeOutput}")
+        for _ in range(1, multi_person_num + 1):
             bike = MultiPersonBike.random_multi_person_bike()
             multi_person_file.write(f"{bike.bike_id},{bike.seat_config},{bike.has_stash},{bike.has_roof},{bike.rowing_seats_num}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
 
             print("Multi-person bike generation completed.")
+
+        print(f"Generating {premium_num} premium bikes to premium_bikes.csv and base bikes to {self.bikeOutput}")
+        for _ in range(1, premium_num + 1):
+            bike = PremiumBike.random_premium_bike()
+            premium_bike_file.write(f"{bike.bike_id},{bike.has_assist},{bike.has_audio},{bike.has_lights},{bike.battery_life}\n")
+            base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
