@@ -74,3 +74,42 @@ class TwoPersonBike(Bike):
         hourly_rate = round(random.uniform(7.0, 25.0), 2)
         pedal_type = random.choice(['standard', 'fancy', 'small'])
         return cls(bike_id, is_functional, hourly_rate, pedal_type)
+
+
+class Transaction:
+    def __init__(self, transaction_id, client_id, bike_id, employee_id, booking_id,
+                 transaction_date, transaction_hour, planned_time, real_time, recipe_type, group_size):
+        self.transaction_id = transaction_id
+        self.client_id = client_id
+        self.bike_id = bike_id
+        self.employee_id = employee_id
+        self.booking_id = booking_id
+        self.transaction_date = transaction_date
+        self.transaction_hour = transaction_hour
+        self.planned_time = planned_time
+        self.real_time = real_time
+        self.recipe_type = recipe_type
+        self.group_size = group_size
+
+    @classmethod
+    def random_transaction(cls, date, client_ids, bike_ids, employee_ids, booking_ids):
+        transaction_id = str(uuid.uuid4())
+        client_id = random.choice(client_ids)
+        bike_id = random.choice(bike_ids)
+        employee_id = random.choice(employee_ids)
+        transaction_date = date
+        if booking_ids is None or len(booking_ids) == 0:
+            booking_id = 0
+        else:
+            booking_id = random.choice(booking_ids)
+
+        transaction_hour = random.randint(8, 20)  # Assuming transactions happen between 8 AM and 8 PM
+        planned_time = random.randint(1, 8)  # Planned time between 1 to 8 hours
+        real_time = planned_time + random.choice([-1, 0, 1])  # Real time can be planned time +/- 1 hour
+        recipe_type = random.choice(['standard', 'premium', 'family'])
+
+        # TODO: make group size make sense with bike type
+        group_size = random.randint(1, 6)  # Group size between 1 to 6
+
+        return cls(transaction_id, client_id, bike_id, employee_id, booking_id,
+                   transaction_date, transaction_hour, planned_time, real_time, recipe_type, group_size)
