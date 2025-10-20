@@ -174,4 +174,19 @@ class DataGenerator:
         print("Bike generation completed.")
 
     def generate_transactions(self, date_start, date_end):
-        pass
+        print(f"Generating {self.transactionNum} transactions to {self.transactionOutput}")
+        if not self.client_id_list or not self.bike_id_list or not self.employee_id_list:
+            print("Error: Client, Bike, and Employee ID lists must be populated to generate transactions.")
+            return
+
+        with open(self.transactionOutput, 'w') as f:
+            f.write("transaction_id,client_id,bike_id,employee_id,booking_id,transaction_date,transaction_hour,planned_time,real_time,recipe_type,group_size\n")
+            for _ in range(1, self.transactionNum + 1):
+                date = self.faker.date_between(start_date=date_start, end_date=date_end)
+                transaction = Transaction.random_transaction(date, self.client_id_list, self.bike_id_list, self.employee_id_list, None)
+                f.write(f"{transaction.transaction_id},{transaction.client_id},{transaction.bike_id},"
+                        f"{transaction.employee_id},{transaction.booking_id},{transaction.transaction_date},"
+                        f"{transaction.transaction_hour},{transaction.planned_time},{transaction.real_time},{transaction.recipe_type},{transaction.group_size}\n")
+
+        print("Transaction generation completed.")
+
