@@ -1,3 +1,4 @@
+from os import supports_effective_ids
 from traceback import print_tb
 
 from faker import Faker
@@ -6,7 +7,7 @@ import random
 import uuid
 
 class DataGenerator:
-    def __init__(self, clientNum : int = 10, bikeNum : int = 10, transactionNum : int = 10, employeeNum : int = 10):
+    def __init__(self, clientNum : int = 10, bikeNum : int = 10, transactionNum : int = 10, employeeNum : int = 10, save_ids : bool = False):
         self.clientNum = clientNum
         self.bikeNum = bikeNum
         self.transactionNum = transactionNum
@@ -16,11 +17,18 @@ class DataGenerator:
         self.bikeOutput = "bikes.csv"
         self.transactionOutput = "transactions.csv"
         self.employeeOutput = "employees.csv"
+        self.employee_id_list = []
+        self.client_id_list = []
+        self.bike_id_list = []
+        self.save_ids = save_ids
+
 
 
 
     def generate_clients(self):
         print(f"Generating {self.clientNum} clients to {self.clientOutput}")
+        if self.save_ids:
+            print("Saving client IDs to client_id_list")
         with open(self.clientOutput, 'w') as f:
             f.write("client_id,first_name,last_name,email_address,phone_number\n")
             for _ in range(1, self.clientNum + 1):
@@ -30,6 +38,8 @@ class DataGenerator:
                 phone_number = self.faker.phone_number()
                 email_address = f"{first_name.lower()}.{last_name.lower()}@example.com"
                 f.write(f"{client_id},{first_name},{last_name},{email_address},{phone_number}\n")
+                if self.save_ids:
+                    self.client_id_list.append(client_id)
 
         print("Client generation completed.")
 
@@ -60,6 +70,8 @@ class DataGenerator:
 
     def generate_employees(self):
         print(f"Generating {self.employeeNum} employees to {self.employeeOutput}")
+        if self.save_ids:
+            print("Saving employee IDs to employee_id_list")
         with open(self.employeeOutput, 'w') as f:
             f.write("empleyee_id,PESEL,enroll_date,birth_date,position,hour_wage\n")
             for _ in range(1, self.employeeNum + 1):
@@ -78,6 +90,8 @@ class DataGenerator:
                 hour_wage = round(random.uniform(15.0, 50.0), 2)
                 pesel = self.__generate_PESEL(birth_date, is_male)
                 f.write(f"{employee_id},{pesel},{enroll_date},{birth_date},{position},{hour_wage}\n")
+                if self.save_ids:
+                    self.employee_id_list.append(employee_id)
 
         print("Employee generation completed.")
 
@@ -90,6 +104,8 @@ class DataGenerator:
         else:
             print(f"Generating {multi_person_num + premium_num + two_person_num} bikes")
 
+        if self.save_ids:
+            print("Saving bike IDs to bike_id_list")
         # Reset base bike file to enable appending types later
         f = open(self.bikeOutput, 'r+')
         f.truncate(0)
@@ -125,6 +141,8 @@ class DataGenerator:
             bike = MultiPersonBike.random_multi_person_bike()
             multi_person_file.write(f"{bike.bike_id},{bike.seat_config},{bike.has_stash},{bike.has_roof},{bike.rowing_seats_num}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
+            if self.save_ids:
+                self.bike_id_list.append(bike.bike_id)
 
         print("Multi-person bike generation completed.")
 
@@ -133,6 +151,8 @@ class DataGenerator:
             bike = PremiumBike.random_premium_bike()
             premium_bike_file.write(f"{bike.bike_id},{bike.has_assist},{bike.has_audio},{bike.has_lights},{bike.battery_life}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
+            if self.save_ids:
+                self.bike_id_list.append(bike.bike_id)
 
         print("Premium bike generation completed.")
 
@@ -141,6 +161,8 @@ class DataGenerator:
             bike = TwoPersonBike.random_two_person_bike()
             two_person_file.write(f"{bike.bike_id},{bike.pedal_type}\n")
             base_file.write(f"{bike.bike_id},{bike.seat_num},{bike.is_functional},{bike.hourly_rate}\n")
+            if self.save_ids:
+                self.bike_id_list.append(bike.bike_id)
 
         print("Two-person bike generation completed.")
 
@@ -150,3 +172,6 @@ class DataGenerator:
         two_person_file.close()
 
         print("Bike generation completed.")
+
+    def generate_transactions(self, date_start, date_end):
+        pass
