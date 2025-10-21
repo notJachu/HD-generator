@@ -92,17 +92,14 @@ class Transaction:
         self.group_size = group_size
 
     @classmethod
-    def random_transaction(cls, date, client_ids, bike_ids, employee_ids, booking_ids):
+    def random_transaction(cls, date, client_ids, bike_ids, employee_ids, booking_id):
         transaction_id = str(uuid.uuid4())
         client_id = random.choice(client_ids)
         bike_id = random.choice(bike_ids)
         employee_id = random.choice(employee_ids)
         transaction_date = date
-        if booking_ids is None or len(booking_ids) == 0:
+        if booking_id is None:
             booking_id = 0
-        else:
-            booking_id = random.choice(booking_ids)
-
         transaction_hour = random.randint(8, 20)  # Assuming transactions happen between 8 AM and 8 PM
         planned_time = random.randint(1, 8)  # Planned time between 1 to 8 hours
         real_time = planned_time + random.choice([-1, 0, 1])  # Real time can be planned time +/- 1 hour

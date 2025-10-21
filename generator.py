@@ -1,3 +1,4 @@
+from datetime import timedelta
 from os import supports_effective_ids
 from traceback import print_tb
 
@@ -86,6 +87,7 @@ class DataGenerator:
 
                 birth_date = self.faker.date_of_birth(minimum_age=18, maximum_age=65)
                 enroll_date = self.faker.date_between(start_date=birth_date.replace(year=birth_date.year + 18), end_date='today')
+                # TODO: only salesperson can serve clients
                 position = random.choice(['Manager', 'Salesperson', 'Mechanic', 'Cashier'])
                 hour_wage = round(random.uniform(15.0, 50.0), 2)
                 pesel = self.__generate_PESEL(birth_date, is_male)
@@ -174,16 +176,25 @@ class DataGenerator:
         print("Bike generation completed.")
 
     def generate_transactions(self, date_start, date_end):
-        print(f"Generating {self.transactionNum} transactions to {self.transactionOutput}")
+        print(f"Generating {self.transactionNum} transactions to {self.transactionOutput}, and bookings to bookings.csv")
         if not self.client_id_list or not self.bike_id_list or not self.employee_id_list:
             print("Error: Client, Bike, and Employee ID lists must be populated to generate transactions.")
             return
 
         with open(self.transactionOutput, 'w') as f:
             f.write("transaction_id,client_id,bike_id,employee_id,booking_id,transaction_date,transaction_hour,planned_time,real_time,recipe_type,group_size\n")
+            booking_file = open('bookings.csv', 'w')
+            booking_file.write("booking_id, booking_date\n")
             for _ in range(1, self.transactionNum + 1):
                 date = self.faker.date_between(start_date=date_start, end_date=date_end)
-                transaction = Transaction.random_transaction(date, self.client_id_list, self.bike_id_list, self.employee_id_list, None)
+                booking_id = None
+                if random.randint(1, 10) <= 3:  # 30% chance of booking
+                    booking_id = str(uuid.uuid4())
+                    # 1 - 2 weeks before transaction date
+                    booking_date = date - timedelta(days=random.randint(7, 14))
+                    booking_file.write(f"{booking_id},{booking_date}\n")
+
+                transaction = Transaction.random_transaction(date, self.client_id_list, self.bike_id_list, self.employee_id_list, booking_id)
                 f.write(f"{transaction.transaction_id},{transaction.client_id},{transaction.bike_id},"
                         f"{transaction.employee_id},{transaction.booking_id},{transaction.transaction_date},"
                         f"{transaction.transaction_hour},{transaction.planned_time},{transaction.real_time},{transaction.recipe_type},{transaction.group_size}\n")
