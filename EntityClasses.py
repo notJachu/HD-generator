@@ -92,10 +92,9 @@ class Transaction:
         self.group_size = group_size
 
     @classmethod
-    def random_transaction(cls, date, client_ids, bike_ids, employee_ids, booking_id):
+    def random_transaction(cls, date, client_ids, bike_id, employee_ids, booking_id):
         transaction_id = str(uuid.uuid4())
         client_id = random.choice(client_ids)
-        bike_id = random.choice(bike_ids)
         employee_id = random.choice(employee_ids)
         transaction_date = date
         if booking_id is None:
@@ -110,3 +109,21 @@ class Transaction:
 
         return cls(transaction_id, client_id, bike_id, employee_id, booking_id,
                    transaction_date, transaction_hour, planned_time, real_time, recipe_type, group_size)
+
+
+class FaultReport:
+    def __init__(self, bike_id, last_lease_date, report_date, client_contact, repair_cost, insurance_claimed, fault_description):
+        self.bike_id = bike_id
+        self.last_lease_date = last_lease_date
+        self.report_date = report_date
+        self.client_contact = client_contact
+        self.repair_cost = repair_cost
+        self.insurance_claimed = insurance_claimed
+        self.fault_description = fault_description
+
+    @classmethod
+    def random_fault_report(cls, bike_id, last_lease_date, report_date, client_contact):
+        repair_cost = round(random.uniform(20.0, 500.0), 2)
+        insurance_claimed = round(random.uniform(0.0, repair_cost), 2)
+        fault_description = "lorem ipsum dolor sit amet"
+        return cls(bike_id, last_lease_date, report_date, client_contact, repair_cost, insurance_claimed, fault_description)

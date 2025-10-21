@@ -9,5 +9,6 @@ def main():
     generator.generate_employees()
     generator.generate_bikes(generate_types=True)
     generator.generate_transactions(date_start = datetime(2015,1, 1), date_end = datetime(2020,12,31))
+    generator.generate_faults(faultNum=10)
 if __name__ == "__main__":
     main()

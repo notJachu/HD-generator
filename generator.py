@@ -22,6 +22,7 @@ class DataGenerator:
         self.client_id_list = []
         self.bike_id_list = []
         self.save_ids = save_ids
+        self.bike_lease_pairs = []
 
 
 
@@ -193,11 +194,30 @@ class DataGenerator:
                     # 1 - 2 weeks before transaction date
                     booking_date = date - timedelta(days=random.randint(7, 14))
                     booking_file.write(f"{booking_id},{booking_date}\n")
-
-                transaction = Transaction.random_transaction(date, self.client_id_list, self.bike_id_list, self.employee_id_list, booking_id)
+                bike_id = random.choice(self.bike_id_list)
+                self.bike_lease_pairs.append((bike_id, date))
+                transaction = Transaction.random_transaction(date, self.client_id_list, bike_id, self.employee_id_list, booking_id)
                 f.write(f"{transaction.transaction_id},{transaction.client_id},{transaction.bike_id},"
                         f"{transaction.employee_id},{transaction.booking_id},{transaction.transaction_date},"
                         f"{transaction.transaction_hour},{transaction.planned_time},{transaction.real_time},{transaction.recipe_type},{transaction.group_size}\n")
 
         print("Transaction generation completed.")
 
+    def generate_faults(self, faultNum : int = 10):
+        print(f"Generating {faultNum} faults to faults.csv")
+        if not self.bike_id_list or not self.bike_lease_pairs:
+            print("Error: Bike ID list and lease dates must be populated to generate faults.")
+            return
+
+        with open('faults.csv', 'w') as f:
+            f.write("bike_id,last_lease_date,report_date,client_contact,repair_cost,insurance_claimed,fault_description\n")
+            for _ in range(1, faultNum + 1):
+                bike_id, last_lease_date = random.choice(self.bike_lease_pairs)
+                report_date = last_lease_date + timedelta(days=random.randint(1, 3))
+                client_contact = self.faker.phone_number()
+                fault_report = FaultReport.random_fault_report(bike_id, last_lease_date, report_date, client_contact)
+                f.write(f"{fault_report.bike_id},{fault_report.last_lease_date},{fault_report.report_date},"
+                        f"{fault_report.client_contact},{fault_report.repair_cost},{fault_report.insurance_claimed},"
+                        f"{fault_report.fault_description}\n")
+
+        print("Fault generation completed.")
