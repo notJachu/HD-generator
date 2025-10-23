@@ -6,6 +6,8 @@ from faker import Faker
 from EntityClasses import *
 import random
 import uuid
+import os
+import shutil
 
 class DataGenerator:
     def __init__(self, clientNum : int = 10, bikeNum : int = 10, transactionNum : int = 10, employeeNum : int = 10, save_ids : bool = False):
@@ -27,11 +29,13 @@ class DataGenerator:
 
 
 
-    def generate_clients(self):
+    def generate_clients(self, output_file: str = None):
         print(f"Generating {self.clientNum} clients to {self.clientOutput}")
         if self.save_ids:
             print("Saving client IDs to client_id_list")
-        with open(self.clientOutput, 'w') as f:
+        if output_file is None:
+            output_file = self.clientOutput
+        with open(output_file, 'w') as f:
             f.write("client_id,first_name,last_name,email_address,phone_number\n")
             for _ in range(1, self.clientNum + 1):
                 client_id = str(uuid.uuid4())
@@ -70,11 +74,13 @@ class DataGenerator:
         return pesel
 
 
-    def generate_employees(self):
+    def generate_employees(self, output_file: str = None):
         print(f"Generating {self.employeeNum} employees to {self.employeeOutput}")
         if self.save_ids:
             print("Saving employee IDs to employee_id_list")
-        with open(self.employeeOutput, 'w') as f:
+        if output_file is None:
+            output_file = self.employeeOutput
+        with open(output_file, 'w') as f:
             f.write("empleyee_id,PESEL,enroll_date,birth_date,position,hour_wage\n")
             for _ in range(1, self.employeeNum + 1):
                 employee_id = str(uuid.uuid4())
@@ -99,7 +105,7 @@ class DataGenerator:
         print("Employee generation completed.")
 
 
-    def generate_bikes(self, premium_num : int = 10, two_person_num : int = 10, multi_person_num : int = 10, generate_types: bool = False):
+    def generate_bikes(self, premium_num : int = 10, two_person_num : int = 10, multi_person_num : int = 10, generate_types: bool = False, second_interval: bool = False):
 
         print(f"Type generation is set to {generate_types}")
         if not generate_types:
@@ -110,7 +116,12 @@ class DataGenerator:
         if self.save_ids:
             print("Saving bike IDs to bike_id_list")
         # Reset base bike file to enable appending types later
-        f = open(self.bikeOutput, 'r+')
+
+        if second_interval:
+            output_file = os.path.splitext(self.bikeOutput)[0] + "_t2.csv"
+        else:
+            output_file = self.bikeOutput
+        f = open(output_file, 'r+')
         f.truncate(0)
         f.close()
 
@@ -128,10 +139,16 @@ class DataGenerator:
         # else:
 
         # TODO: add variable for files not hardcode
-        base_file = open(self.bikeOutput, 'a')
-        multi_person_file = open('multi_person_bikes.csv', 'w')
-        premium_bike_file = open('premium_bikes.csv', 'w')
-        two_person_file = open('two_person_bikes.csv', 'w')
+
+        if second_interval:
+            multi_person_file = open('multi_person_bikes_t2.csv', 'w')
+            premium_bike_file = open('premium_bikes_t2.csv', 'w')
+            two_person_file = open('two_person_bikes_t2.csv', 'w')
+        else:
+            multi_person_file = open('multi_person_bikes.csv', 'w')
+            premium_bike_file = open('premium_bikes.csv', 'w')
+            two_person_file = open('two_person_bikes.csv', 'w')
+        base_file = open(output_file, 'a')
 
         # Headers
         base_file.write("bike_id,seats_num,is_functional,hourly_rate\n")
@@ -176,13 +193,16 @@ class DataGenerator:
 
         print("Bike generation completed.")
 
-    def generate_transactions(self, date_start, date_end):
+    def generate_transactions(self, date_start, date_end, second_interval: bool = False):
         print(f"Generating {self.transactionNum} transactions to {self.transactionOutput}, and bookings to bookings.csv")
         if not self.client_id_list or not self.bike_id_list or not self.employee_id_list:
             print("Error: Client, Bike, and Employee ID lists must be populated to generate transactions.")
             return
-
-        with open(self.transactionOutput, 'w') as f:
+        if second_interval:
+            output_file = os.path.splitext(self.transactionOutput)[0] + "_t2.csv"
+        else:
+            output_file = self.transactionOutput
+        with open(output_file, 'w') as f:
             f.write("transaction_id,client_id,bike_id,employee_id,booking_id,transaction_date,transaction_hour,planned_time,real_time,recipe_type,group_size\n")
             booking_file = open('bookings.csv', 'w')
             booking_file.write("booking_id, booking_date\n")
@@ -203,13 +223,17 @@ class DataGenerator:
 
         print("Transaction generation completed.")
 
-    def generate_faults(self, faultNum : int = 10):
+    def generate_faults(self, faultNum : int = 10, second_interval: bool = False):
         print(f"Generating {faultNum} faults to faults.csv")
         if not self.bike_id_list or not self.bike_lease_pairs:
             print("Error: Bike ID list and lease dates must be populated to generate faults.")
             return
 
-        with open('faults.csv', 'w') as f:
+        if second_interval:
+            output_file = os.path.splitext('faults.csv')[0] + "_t2.csv"
+        else:
+            output_file = 'faults.csv'
+        with open(output_file, 'w') as f:
             f.write("bike_id,last_lease_date,report_date,client_contact,repair_cost,insurance_claimed,fault_description\n")
             for _ in range(1, faultNum + 1):
                 bike_id, last_lease_date = random.choice(self.bike_lease_pairs)
@@ -221,3 +245,38 @@ class DataGenerator:
                         f"{fault_report.fault_description}\n")
 
         print("Fault generation completed.")
+
+    def copy_skip_header(self, source_file: str, dest_file: str):
+        with open(source_file, 'r') as src, open(dest_file, 'a') as dst:
+            next(src)  # Skip header
+            for line in src:
+                dst.write(line)
+
+
+    def generate_next_interval(self, date_start, date_end):
+        clients_t2 = os.path.splitext(self.clientOutput)[0] + "_t2.csv"
+        employees_t2 = os.path.splitext(self.employeeOutput)[0] + "_t2.csv"
+        bikes_t2 = os.path.splitext(self.bikeOutput)[0] + "_t2.csv"
+        transactions_t2 = os.path.splitext(self.transactionOutput)[0] + "_t2.csv"
+        bookings_t2 = "bookings_t2.csv"
+        faults_t2 = "faults_t2.csv"
+        premium_bikes_t2 = "premium_bikes_t2.csv"
+        two_person_bikes_t2 = "two_person_bikes_t2.csv"
+        multi_person_bikes_t2 = "multi_person_bikes_t2.csv"
+
+        # Copy existing files or create with headers
+        self.generate_clients(output_file=clients_t2)
+        self.copy_skip_header('clients.csv', clients_t2)
+        self.generate_employees(output_file=employees_t2)
+        self.copy_skip_header('employees.csv', employees_t2)
+        self.generate_bikes(10, 10, 10, generate_types=True, second_interval=True)
+        self.copy_skip_header('bikes.csv', bikes_t2)
+        self.copy_skip_header('premium_bikes.csv', premium_bikes_t2)
+        self.copy_skip_header('two_person_bikes.csv', two_person_bikes_t2)
+        self.copy_skip_header('multi_person_bikes.csv', multi_person_bikes_t2)
+        self.generate_transactions(date_start, date_end, second_interval=True)
+        self.copy_skip_header('transactions.csv', transactions_t2)
+        self.copy_skip_header('bookings.csv', bookings_t2)
+        self.generate_faults(faultNum=10, second_interval=True)
+        self.copy_skip_header('faults.csv', faults_t2)
+        print("Next interval data generation completed.")
